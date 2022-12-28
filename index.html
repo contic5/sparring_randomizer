@@ -1,0 +1,243 @@
+<!doctype HTML>
+<html>
+<head>
+<title>Sparring Randomizer</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+HarunoUmi&display=swap" rel="stylesheet">
+
+<link href='mystyle.css' type='text/css' rel='stylesheet'>
+</head>
+<body>
+<div id='main'>
+<div class='padding'></div>
+
+<div id='content'>
+<h1>Sparring Randomizer</h1>
+<div class="alert">
+  <p class="big nopadding nomargin">This webpage would like to play sounds. This is needed for the alarm.</p>
+  <p class="buttons nopadding">
+    <button class="big" value="0">Block</button>
+    <button class="big" value="1">Allow</button>
+  </p>
+</div>
+
+<select class='big' id='colorSchemes' onchange="setColorScheme()"></select>
+
+<form>
+<label>Voices:</label>
+    <select id='voiceSelect'></select>
+<br>
+<label>Mode:</label>
+<select id='mode'>
+    <option value=0>Offense</option>
+    <option value=1>Defense</option>
+</select><br>
+Min Time 1<input type='range' min=1 max=20 step=1 value=3 id='mintime' class='slider'>20<br>
+<b id='showmintime'>3</b><br>
+Max Time 1<input type='range' min=1 max=20 step=1 value=8 id='maxtime' class='slider'>20<br>
+<b id='showmaxtime'>10</b><br>
+</form>
+
+<div id='displaymode'>Offense</div>
+<div id='result' onclick='toggle()'>Press to Start<br>Press again to Stop</div>
+</div>
+
+<div class='padding'></div>
+</div>
+<script async src="setupalert.js"></script>
+<script src="getvoices.js"></script>
+<script>
+
+function newKick()
+{
+    let roll=Math.floor(Math.random()*maxweight[mode]);
+    let weightindex=0;
+    let weightsum=0;
+    while(roll>=weightsum)
+    {
+        weightsum+=weights[mode][weightindex];
+        if(roll<weightsum)
+        {
+            break;
+        }
+        weightindex+=1;
+    }
+    console.log("roll:"+roll+" weightsum:"+weightsum)
+    console.log(techniques[mode][weightindex]);
+    $("#result").text(techniques[mode][weightindex]);
+
+
+    if(usingaudio)
+    {
+    let msg = new SpeechSynthesisUtterance();
+    msg.text=techniques[mode][weightindex];
+
+    var selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+    console.log("Selected Option:"+selectedOption);
+    for(i = 0; i < voices.length ; i++)
+    {
+        if(voices[i].name === selectedOption)
+        {
+          msg.voice = voices[i];
+        }
+    }
+    msg.rate = 1.25;
+
+    window.speechSynthesis.speak(msg);
+    }
+
+    let milliseconds=Math.floor(Math.random()*1000*(maxseconds-minseconds)+1000*minseconds);
+    mytimer2=setTimeout(hideText,2000);
+    mytimer=setTimeout(newKick,milliseconds);
+}
+function hideText()
+{
+    console.log("Hide text");
+    $("#result").text("");
+}
+$.fn.multiline = function(text){
+    this.text(text);
+    this.html(this.html().replace(/\n/g,'<br/>'));
+    return this;
+}
+function toggle()
+{
+    if(running==true)
+    {
+        stop();
+    }
+    else
+    {
+        start();
+    }
+}
+function start()
+{
+    running=true;
+
+    $("#result").text("Get Ready");
+    $("#result").css("font-size","128px");
+    $("#result").addClass("running");
+    $("#result").removeClass("waiting");
+    let milliseconds=Math.floor(Math.random()*1000*(maxseconds-minseconds)+1000*minseconds);
+    mytimer=setTimeout(newKick,milliseconds);
+
+    scrollingElement.scrollTop = scrollingElement.scrollHeight;
+}
+function stop()
+{
+    running=false;
+    $("#result").multiline("Paused \n Tap to Resume");
+    $("#result").css("font-size","80px");
+    $("#result").addClass("waiting");
+    $("#result").removeClass("running");
+    clearInterval(mytimer);
+    clearInterval(mytimer2);
+}
+
+$("#mode").change(function(){
+    mode=$("#mode").val();
+    $("#displaymode").text($("#mode option:selected").text());
+});
+
+$("#mintime").change(function(){
+    minseconds=parseInt($("#mintime").val());
+    $("#showmintime").text(minseconds);
+    if(minseconds>maxseconds)
+    {
+        maxseconds=minseconds;
+        $("#maxtime").val(maxseconds);
+        $("#showmaxtime").text(maxseconds);
+    }
+});
+
+$("#maxtime").change(function(){
+    maxseconds=parseInt($("#maxtime").val());
+    $("#showmaxtime").text(maxseconds);
+    if(maxseconds<minseconds)
+    {
+        minseconds=maxseconds;
+        $("#mintime").val(minseconds);
+        $("#showmintime").text(minseconds);
+    }
+});
+
+function updateScheme(i)
+{
+    console.log(colorschemes[i]);
+    $("body").css("color",colorschemes[i].text);
+    $(".padding").css("background-color",colorschemes[i].padding);
+    $("#content").css("background-color",colorschemes[i].content);
+    $("#result").css("background-color",colorschemes[i].result);
+}
+function setColorScheme()
+{
+    let colorschemeelem=document.getElementById("colorSchemes");
+    console.log(colorschemeelem);
+    let colorschemeselected=colorschemeelem.value;
+    console.log(colorschemeselected);
+    updateScheme(colorschemeselected);
+}
+
+var voiceSelect = document.querySelector('select');
+
+let scrollingElement = (document.scrollingElement || document.body);
+
+let colorschemes=
+[
+    {name:"Fire",text:"#121212",padding:"#FCBA04",content:"#CB0104",result:"#FE2023"},
+    {name:"Storm",text:"#FFE20A",padding:"#2B2B2B",content:"#5A5971",result:"#36364C"}
+];
+for(let i=0;i<colorschemes.length;i++)
+{
+    let optionelem=document.createElement("option");
+    optionelem.innerHTML=colorschemes[i].name;
+    optionelem.value=i;
+    if(i==colorschemes.length-1)
+    {
+        optionelem.selected=true;
+    }
+    document.getElementById("colorSchemes").appendChild(optionelem);
+}
+
+let running=false;
+let mytimer=null;
+let mytimer2=null;
+let mode=0;
+let usingaudio=false;
+
+let minseconds=3;
+let maxseconds=10;
+let techniques=[
+    [],
+    [],
+];
+techniques[0]=["Cut Kick","Round House","Back Kick","Skipping Round House","Double Kick",
+    "Shuffle Up Kick","Shuffle Back Kick","Jump Back Kick","Step up Kick","Step back Kick"];
+techniques[1]=["Cut Kick","Round House","Back Kick","Skipping Round House","Block and Punch",
+    "Shuffle Up Kick","Shuffle Back Kick","Step Up","Jump Back Kick","Step back Kick"];
+let weights=[
+    [10,15,5,15,7,11,7,5,15,10],
+    [10,10,15,5,10,10,15,10,10,5]
+];
+
+let maxweight=[0,0];
+for(let i=0;i<2;i++)
+{
+    for(const weight of weights[i])
+    {
+        maxweight[i]+=weight;
+    }
+}
+console.log(maxweight);
+
+updateScheme(colorschemes.length-1);
+$("#result").css("font-size","80px");
+//mytimer=setTimeout(newKick,1000);
+</script>
+
+</body>
+</html>

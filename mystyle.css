@@ -1,0 +1,71 @@
+#main
+{
+    display: flex;
+}
+#content
+{
+    width:60%;
+    background-color: #CB0104;
+    text-align: center;
+}
+.padding
+{
+     width:20%;
+     background-color: #FCBA04;
+}
+body
+{
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    color: #121212;
+}
+label
+{
+    font-size: 24px;
+}
+select
+{
+    font-size: 24px;
+    margin-top: 25px;
+}
+.slider
+{
+    width: 400px;
+}
+.big
+{
+    font-size: 36px;
+}
+.nopadding
+{
+    padding: 0px;
+}
+.nomargin
+{
+    margin: 0px;
+}
+#displaymode
+{
+    font-size: 64px;
+}
+#result
+{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+
+    font-size: 128px;
+    background-color: #FE2023; 
+    height: 300px;
+    margin: auto;
+}
+.running
+{
+    font-size: 196px;
+    vertical-align: middle;
+    min-height:1000px;
+}
+.waiting
+{
+    position: relative;
+}
